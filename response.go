@@ -69,6 +69,7 @@ func ReadResponse(ws *websocket.Conn) (data []byte, err error) {
 			} else {
 				err = errors.New("An unknown error occured")
 			}
+			data = []byte(res.Status.Message)
 			return
 		}
 	}
