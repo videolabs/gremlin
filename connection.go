@@ -9,10 +9,12 @@ import (
 	"time"
 )
 
-var servers []*url.URL
+type Cluster struct {
+	servers []*url.URL
+}
 
-func NewCluster(s ...string) (err error) {
-	servers = nil
+func NewCluster(s ...string) (cluster *Cluster, err error) {
+	cluster = &Cluster{}
 	// If no arguments use environment variable
 	if len(s) == 0 {
 		connString := strings.TrimSpace(os.Getenv("GREMLIN_SERVERS"))
@@ -20,7 +22,7 @@ func NewCluster(s ...string) (err error) {
 			err = errors.New("No servers set. Configure servers to connect to using the GREMLIN_SERVERS environment variable.")
 			return
 		}
-		servers, err = SplitServers(connString)
+		cluster.servers, err = SplitServers(connString)
 		return
 	}
 	// Else use the supplied servers
@@ -29,7 +31,7 @@ func NewCluster(s ...string) (err error) {
 		if u, err = url.Parse(v); err != nil {
 			return
 		}
-		servers = append(servers, u)
+		cluster.servers = append(cluster.servers, u)
 	}
 	return
 }
@@ -50,9 +52,9 @@ func SplitServers(connString string) (servers []*url.URL, err error) {
 	return
 }
 
-func CreateConnection() (conn net.Conn, server *url.URL, err error) {
+func (cluster *Cluster) CreateConnection() (conn net.Conn, server *url.URL, err error) {
 	connEstablished := false
-	for _, s := range servers {
+	for _, s := range cluster.servers {
 		c, err := net.DialTimeout("tcp", s.Host, 1*time.Second)
 		if err != nil {
 			continue

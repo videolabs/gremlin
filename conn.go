@@ -10,9 +10,9 @@ type Conn struct {
 	ws *websocket.Conn
 }
 
-func NewConn() (*Conn, error) {
+func (cluster *Cluster) NewConn() (*Conn, error) {
 	// Open a TCP connection
-	conn, server, err := CreateConnection()
+	conn, server, err := cluster.CreateConnection()
 	if err != nil {
 		return nil, err
 	}
