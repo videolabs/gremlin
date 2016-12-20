@@ -9,6 +9,7 @@ type Request struct {
 	Op        string       `json:"op"`
 	Processor string       `json:"processor"`
 	Args      *RequestArgs `json:"args"`
+	conn      *Conn
 }
 
 type RequestArgs struct {
@@ -23,7 +24,7 @@ type RequestArgs struct {
 
 type Bind map[string]interface{}
 
-func Query(query string) *Request {
+func (c *Conn) Query(query string) *Request {
 	args := &RequestArgs{
 		Gremlin:  query,
 		Language: "gremlin-groovy",
@@ -33,6 +34,7 @@ func Query(query string) *Request {
 		Op:        "eval",
 		Processor: "",
 		Args:      args,
+		conn:      c,
 	}
 	return req
 }

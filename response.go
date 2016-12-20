@@ -3,9 +3,9 @@ package gremlin
 import (
 	"encoding/json"
 	"errors"
-	"github.com/gorilla/websocket"
-	"net/http"
 	"time"
+
+	"github.com/gorilla/websocket"
 )
 
 type Response struct {
@@ -89,26 +89,15 @@ func (req *Request) Exec() (data []byte, err error) {
 	requestMessage = append(requestMessage, mimeTypeLen)
 	requestMessage = append(requestMessage, mimeType...)
 	requestMessage = append(requestMessage, message...)
-	// Open a TCP connection
-	conn, server, err := CreateConnection()
-	if err != nil {
+	if err = req.conn.ws.SetWriteDeadline(time.Now().Add(10 * time.Second)); err != nil {
 		return
 	}
-	// Open a new socket connection
-	ws, _, err := websocket.NewClient(conn, server, http.Header{}, 0, len(requestMessage))
-	if err != nil {
+	if err = req.conn.ws.SetReadDeadline(time.Now().Add(10 * time.Second)); err != nil {
 		return
 	}
-	defer ws.Close()
-	if err = ws.SetWriteDeadline(time.Now().Add(10 * time.Second)); err != nil {
-		return
-	}
-	if err = ws.SetReadDeadline(time.Now().Add(10 * time.Second)); err != nil {
-		return
-	}
-	if err = ws.WriteMessage(websocket.BinaryMessage, requestMessage); err != nil {
+	if err = req.conn.ws.WriteMessage(websocket.BinaryMessage, requestMessage); err != nil {
 		return
 	}
 
-	return ReadResponse(ws)
+	return ReadResponse(req.conn.ws)
 }
